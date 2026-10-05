@@ -1,0 +1,54 @@
+# ============================================================
+# Atlas — .gitignore
+# Règle d'or : aucun secret (clé API, mot de passe, token) dans Git.
+# ============================================================
+
+# --- Secrets et configuration locale ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+credentials*.json
+service-account*.json
+key.properties
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# --- Données locales ---
+*.sqlite
+*.sqlite3
+*.db
+
+# --- Flutter / Android (pour plus tard) ---
+.dart_tool/
+mobile/build/
+local.properties
+*.apk
+*.aab
+.gradle/
+
+# --- Éditeurs et système ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp

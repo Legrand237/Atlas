@@ -1,0 +1,6 @@
+# Dépendances de développement et de test (inclut celles d'exécution).
+# Solution temporaire — versions à figer à l'étape 2 (voir requirements.txt).
+-r requirements.txt
+pytest
+httpx
+ruff

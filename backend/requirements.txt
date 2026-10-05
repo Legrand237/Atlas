@@ -1,0 +1,10 @@
+# Dépendances d'exécution du backend Atlas (étape 1).
+#
+# Solution temporaire — à remplacer à l'étape 2 par des versions figées :
+# les versions exactes n'ont pas pu être vérifiées lors de la création de ce fichier
+# (accès à PyPI bloqué dans l'environnement de construction). Après la première
+# installation réussie dans Codespaces, les versions installées seront relevées avec
+# "pip freeze" et figées ici.
+fastapi
+uvicorn[standard]
+pydantic-settings
