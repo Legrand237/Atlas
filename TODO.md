@@ -4,21 +4,26 @@
 - [x] Architecture v2 validée (2026-10-04)
 - [x] Sections 40–41 du cahier des charges intégrées (PROJECT_STATE.md §17) et validées
 - [x] Étape 1 écrite : structure, backend FastAPI (/health), tests, .gitignore, .env.example, devcontainer, guide téléphone (PROJECT_STATE.md §18)
+- [x] Dépôt GitHub privé créé et projet envoyé dans Codespaces
+- [x] `pytest` exécuté par l'utilisateur : 25 passed, 1 warning (2026-10-05)
+- [x] Serveur démarré et `/health` appelé dans le navigateur : réponse JSON conforme
+- [x] Projet enregistré et envoyé : `git` indique « working tree clean » et « up to date with origin/main »
+- [x] `ruff check` relancé depuis `backend/` : signalé OK par l'utilisateur (sortie exacte non transmise)
 
-## À faire pour clôturer l'étape 1 (par l'utilisateur, voir docs/ETAPE1_GUIDE_TELEPHONE.md)
-- [ ] Créer le dépôt GitHub privé `atlas` (avec README initial)
-- [ ] Ouvrir Codespaces, envoyer et décompresser `atlas-etape1.zip`
-- [ ] Installer les dépendances et lancer `pytest` — noter le résultat (attendu : 25 passed, non vérifié)
-- [ ] Lancer le serveur et appeler /health
-- [ ] Vérifier que `backend/.env` n'est pas dans `git status`
-- [ ] Premier commit et `git push`
+## À confirmer pour clôturer l'étape 1
+- [ ] `git ls-files | grep -E "\.env$|\.venv|\.zip$|__pycache__"` n'affiche rien (aucun fichier sensible suivi)
+- [ ] `git log --oneline -3` montre le commit de l'étape 1 (message tel qu'enregistré)
+- [ ] Sur github.com : `backend`, `docs`, `mobile` présents et `backend/.env` absent
+- [ ] Appliquer dans le dépôt les fichiers de suivi mis à jour (PROJECT_STATE.md, TODO.md, CHANGELOG.md, docs/ETAPE1_GUIDE_TELEPHONE.md), puis commit et push
 - [ ] Arrêter le codespace ; vérifier le quota gratuit Codespaces
-- [ ] Lancer `ruff check .` et signaler le résultat
+- [ ] Validation de l'étape 1 par l'utilisateur
 
 ## Dette technique de l'étape 1 (à traiter avant ou pendant l'étape 2)
 - [ ] Figer les versions dans requirements*.txt (pip freeze) — solution temporaire
-- [ ] Tester le devcontainer (Rebuild Container) et vérifier l'image Python 3.12
-- [ ] Valider ou corriger les tests si pytest révèle des échecs
+- [ ] Choisir et figer la version de Python (3.14.2 constatée dans Codespaces, 3.12 visée par le devcontainer)
+- [ ] Avertissement des tests : `httpx` déprécié au profit de `httpx2` dans `starlette.testclient`
+- [ ] Tester le devcontainer (Rebuild Container) et vérifier l'image Python
+- [ ] Documenter dans le guide que `ruff check .` se lance depuis `backend/`
 
 ## Exigences issues des sections 40–41 à planifier
 - [ ] Étape 6–7 : tracer la raison de chaque autorisation/refus ; étape AUTHORIZE dans la boucle

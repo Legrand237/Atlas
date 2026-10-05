@@ -58,9 +58,13 @@ pytest
 Ce que fait chaque ligne : on entre dans le dossier du backend, on crée un environnement Python isolé, on
 l'active (le terminal affiche `(.venv)` au début de la ligne), on installe les outils nécessaires, on lance les tests.
 Résultat attendu : `pip` télécharge pendant environ une minute, puis `pytest` affiche une ligne finale
-du type `25 passed`. (Ce nombre vient de la lecture des tests : il n'a pas encore été vérifié par une exécution.)
+du type `25 passed` (suivi d'un avertissement `httpx` sans conséquence). Ce résultat a été constaté lors de
+la première exécution dans Codespaces.
 Si des tests échouent ou si une erreur apparaît : copie le texte de l'erreur et envoie-le-moi, ne modifie rien.
-Si `pytest: command not found` : l'environnement n'est pas activé, relance `source .venv/bin/activate`.
+Si `pytest: command not found` ou `No module named 'fastapi'` : l'environnement n'est pas activé (ou tu n'es pas
+dans `backend/`), refais `cd backend` puis `source .venv/bin/activate`.
+Contrôle qualité optionnel : toujours depuis `backend/`, lance `ruff check . --output-format=concise`
+(depuis la racine du dépôt, `ruff` peut signaler à tort des erreurs d'ordre d'imports).
 
 ## E. Démarrer le serveur et vérifier /health
 

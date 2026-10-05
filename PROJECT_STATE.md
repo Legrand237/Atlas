@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-04 — Étape 1 livrée (code + documentation), vérification par exécution des tests en attente (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2 non commencée : attend la validation de l'utilisateur.
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2 non commencée : attend la validation de l'utilisateur.
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -181,7 +181,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 - (Résolu 2026-10-04) Sections 40–41 reçues et intégrées en §17 ; validation finale du cahier des charges en attente
 
 ## 15. Roadmap
-- Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE, à vérifier dans Codespaces (§18)
+- Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE et vérifiée dans Codespaces (§18), en attente de validation par l'utilisateur
 - Étape 2 : backend, base, migrations, authentification
 - Étape 3 : LLM Gateway + chat + suivi des coûts
 - Étape 4 : app Flutter (connexion + chat)
@@ -198,7 +198,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 - Étape 15 : jeux, statistiques, durcissement sécurité, tests complets
 
 ## 16. État
-Terminé : planification, architecture v2 et cahier des charges validés, étape 1 écrite (voir §18). En attente : exécution des tests dans Codespaces, validation de l'étape 1 par l'utilisateur. Variables utilisées à l'étape 1 : ENVIRONMENT, LOG_LEVEL (aucun secret). Variables prévues plus tard : DATABASE_URL, JWT_SECRET, LLM_API_KEY, SEARCH_API_KEY, MARKET_DATA_API_KEY. Commandes : voir §18.
+Terminé : planification, architecture v2 et cahier des charges validés, étape 1 écrite (voir §18). Tests et /health vérifiés dans Codespaces. En attente : confirmation des dernières vérifications (§18) et validation de l'étape 1 par l'utilisateur. Variables utilisées à l'étape 1 : ENVIRONMENT, LOG_LEVEL (aucun secret). Variables prévues plus tard : DATABASE_URL, JWT_SECRET, LLM_API_KEY, SEARCH_API_KEY, MARKET_DATA_API_KEY. Commandes : voir §18.
 
 ## 17. Cahier des charges — sections 40 et 41 (intégrées, exigences fonctionnelles)
 Cadre : aucune capacité n'est une promesse irréaliste ; chacune respecte permissions Android, API disponibles, conditions des services externes, limites techniques et règles de sécurité.
@@ -243,9 +243,9 @@ Cadre : aucune capacité n'est une promesse irréaliste ; chacune respecte permi
 - Règle 41.18 : critère d'acceptation de chaque étape de la roadmap.
 - Points d'attention : tâches en arrière-plan sur Android limitées par l'OS (42) ; fonctions caméra/micro/fichiers dépendantes des permissions (40).
 
-## 18. Étape 1 — état réel (2026-10-04)
+## 18. Étape 1 — état réel (mis à jour le 2026-10-05)
 
-Statut : écrite et partiellement vérifiée. Les tests pytest n'ont PAS été exécutés : l'accès à PyPI (pypi.org, files.pythonhosted.org) est bloqué dans l'environnement de construction (« Host not in allowlist »), donc fastapi, pydantic-settings, httpx et pytest n'ont pas pu être installés. Aucune fonctionnalité n'est déclarée « fonctionnelle » au sens 41.18 tant que `pytest` n'a pas été exécuté avec succès dans Codespaces.
+Statut : livrée et vérifiée par exécution chez l'utilisateur, dans Codespaces. L'environnement de construction n'avait pas accès à PyPI (« Host not in allowlist »), donc les tests ont été exécutés par l'utilisateur, pas par l'auteur du code. Résultats rapportés par l'utilisateur (captures d'écran) : `pytest` → 25 passed, 1 warning ; `/health` → réponse JSON `status: ok` via le port 8000 de Codespaces. Les fonctionnalités ci-dessous sont déclarées fonctionnelles au niveau de l'étape 1 ; l'intégration complète aux permissions et à l'audit viendra aux étapes 2 et 6.
 
 ### Fichiers créés
 - Racine : `.gitignore`, `README.md`, `.devcontainer/devcontainer.json`, `PROJECT_STATE.md`, `TODO.md`, `CHANGELOG.md`
@@ -257,21 +257,24 @@ Statut : écrite et partiellement vérifiée. Les tests pytest n'ont PAS été e
 ### Statut par fonctionnalité (critères 41.18)
 | Fonctionnalité | Implémentée | Test écrit | Vérifiée par exécution | Erreurs gérées | Doc minimale | Permissions / audit |
 |---|---|---|---|---|---|---|
-| GET /health | oui | oui (11) | NON | 405/404 par FastAPI, 500 propre | oui | niveau 0 documenté ; audit non applicable avant l'étape 2 |
-| X-Request-ID | oui | oui (pytest) | PARTIELLE : 8 contrôles ASGI manuels réussis | identifiant client invalide remplacé | oui | base du futur identifiant de corrélation (audit, étape 2) |
-| Gestion d'erreur 500 | oui | oui | NON | pas de fuite de détail interne | oui | — |
-| Configuration | oui | oui (4) | NON | valeur invalide : échec au démarrage | oui | — |
-| Hygiène des secrets | oui | oui (10) | PARTIELLE : `git check-ignore` manuel réussi (6 chemins sensibles ignorés, `.env.example` non ignoré, rien de sensible dans l'index) | — | oui | — |
+| GET /health | oui | oui (11) | OUI : 11 tests réussis + appel réel dans le navigateur (JSON `status: ok`, version 0.1.0, environment development) ; la racine `/` répond `{"detail":"Not Found"}` comme attendu | 405/404 par FastAPI, 500 propre | oui | niveau 0 documenté ; audit non applicable avant l'étape 2 |
+| X-Request-ID | oui | oui (pytest) | OUI : tests réussis + 8 contrôles ASGI manuels | identifiant client invalide remplacé | oui | base du futur identifiant de corrélation (audit, étape 2) |
+| Gestion d'erreur 500 | oui | oui | OUI (test pytest réussi) | pas de fuite de détail interne | oui | — |
+| Configuration | oui | oui (4) | OUI (tests réussis) | valeur invalide : échec au démarrage | oui | — |
+| Hygiène des secrets | oui | oui (10) | OUI (tests réussis) + `git check-ignore` manuel réussi côté construction. Côté utilisateur : `git status` propre, branche à jour avec `origin/main`, fin de `git ls-files` vue (tests, docs, mobile/.gitkeep). RESTE À CONFIRMER : absence de `.env`, `.venv`, `.zip` dans `git ls-files` (commande `grep` fournie) | — | oui | — |
 
 ### Vérifications réellement effectuées
 - `python3 -m compileall` sur `app/` et `tests/` : réussi.
 - 8 contrôles manuels du middleware RequestIdMiddleware avec un harnais ASGI (identifiant généré, conservé, remplacé si invalide, exception propagée) : 8/8 réussis.
 - Test manuel de `.gitignore` avec de faux fichiers sensibles (supprimés ensuite) : tous ignorés, aucun dans l'index.
-- NON effectués : pytest, démarrage d'uvicorn, appel de /health, ruff, test du devcontainer.
+- Chez l'utilisateur (Codespaces, captures d'écran) : environnement `.venv` créé et dépendances installées ; `pytest` → 25 passed, 1 warning en 0,60 s ; serveur `uvicorn` démarré, `/health` appelé dans le navigateur via le port 8000 (JSON conforme) ; `git commit` → « nothing to commit, working tree clean », branche « up to date with 'origin/main' » (le commit était donc déjà enregistré et envoyé).
+- `ruff check` : première exécution depuis la racine du dépôt → 2 erreurs corrigeables (fragment vu : ordre des imports près de `from fastapi.testclient import TestClient`, hypothèse : `ruff` lancé hors de `backend/`). Relancé ensuite depuis `backend/` : l'utilisateur a indiqué « C'est bon » (sortie exacte non transmise).
+- NON effectués ou non confirmés : test du devcontainer (non appliqué sur ce premier codespace) ; contenu exact de `git log` ; vérification sur github.com ; arrêt du codespace ; commande `grep` sur `git ls-files`.
 
 ### Limites connues
 - `requirements*.txt` non figés (versions non vérifiables ici) : « Solution temporaire — à remplacer à l'étape 2 » par un `pip freeze` issu d'une installation réussie.
-- Python : `.devcontainer` vise 3.12 ; l'environnement de construction avait 3.13. Le code n'utilise rien de spécifique à une version précise (>= 3.11 requis pour `datetime.UTC`).
+- Python : `.devcontainer` vise 3.12 ; le Codespaces de l'utilisateur utilisait Python 3.14.2 (le devcontainer n'était pas appliqué) et les tests y passent ; l'environnement de construction avait 3.13. Le code requiert Python >= 3.11 (`datetime.UTC`). Choisir et figer une version de Python à l'étape 2.
+- Avertissement de test : `starlette.testclient` signale que l'usage de `httpx` est déprécié au profit de `httpx2` (DeprecationWarning, sans effet sur les résultats). À traiter avec le gel des versions (étape 2).
 - `devcontainer.json` (image `mcr.microsoft.com/devcontainers/python:3.12`) non testé.
 - /health vérifie uniquement que le processus répond (pas de base de données ni de service externe encore).
 - Pas d'audit ni de Policy Engine à ce stade (étapes 2 et 6).
@@ -280,6 +283,6 @@ Statut : écrite et partiellement vérifiée. Les tests pytest n'ont PAS été e
 ### Commandes importantes (depuis `backend/`, environnement activé)
 - Créer l'environnement : `python3 -m venv .venv && source .venv/bin/activate`
 - Installer : `pip install -r requirements-dev.txt`
-- Tests : `pytest` (attendu : 25 passed — nombre issu de la lecture des tests, non vérifié)
+- Tests : `pytest` (résultat constaté chez l'utilisateur : 25 passed, 1 warning)
 - Serveur : `uvicorn app.main:app --reload` puis `curl http://localhost:8000/health`
-- Contrôle qualité (à lancer lors de la vérification) : `ruff check .`
+- Contrôle qualité : `ruff check . --output-format=concise` — à lancer depuis `backend/`, pas depuis la racine du dépôt

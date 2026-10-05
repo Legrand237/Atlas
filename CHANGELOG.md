@@ -2,10 +2,11 @@
 
 ## 2026-10-04 — Étape 1 : structure initiale et backend minimal (0.1.0)
 - Ajout : backend FastAPI (`backend/app`), route réelle `GET /health`, configuration par variables d'environnement, middleware `X-Request-ID`, gestionnaire d'erreur 500 sans fuite de détails.
-- Ajout : 25 tests pytest écrits (health, configuration, hygiène des secrets) — NON exécutés (PyPI inaccessible dans l'environnement de construction).
+- Ajout : 25 tests pytest (health, configuration, hygiène des secrets) — exécutés par l'utilisateur dans Codespaces le 2026-10-05 : 25 passed, 1 warning (PyPI inaccessible dans l'environnement de construction).
 - Ajout : `.gitignore`, `backend/.env.example` (sans secret), `.devcontainer/devcontainer.json` (non testé), `README.md`, `docs/ETAPE1_GUIDE_TELEPHONE.md`, dossiers `mobile/` et `docs/`.
 - Vérifié manuellement : compilation du code, 8 contrôles du middleware (ASGI), `.gitignore` testé avec de faux fichiers sensibles.
-- Dette : requirements non figés (solution temporaire), devcontainer non testé, tests à exécuter dans Codespaces.
+- Vérifié chez l'utilisateur (2026-10-05) : `/health` répond dans le navigateur via Codespaces ; dépôt à jour avec `origin/main` ; `ruff` relancé depuis `backend/` signalé OK.
+- Dette : requirements non figés (solution temporaire), devcontainer non testé, avertissement httpx/httpx2, version de Python à choisir (3.14.2 constatée, 3.12 visée).
 
 ## 2026-10-04 — Cahier des charges sections 40–41 intégrées
 - PROJECT_STATE.md §17 : 60 capacités (section 40) et principes 41.1–41.18 intégrés.
