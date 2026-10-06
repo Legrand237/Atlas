@@ -20,6 +20,7 @@
 
 ## Dette technique de l'étape 1 (à traiter avant ou pendant l'étape 2)
 - [ ] Figer les versions dans requirements*.txt (pip freeze) — solution temporaire
+- [x] Ajouter `*.zip` à .gitignore (fait en 2a)
 - [ ] Choisir et figer la version de Python (3.14.2 constatée dans Codespaces, 3.12 visée par le devcontainer)
 - [ ] Avertissement des tests : `httpx` déprécié au profit de `httpx2` dans `starlette.testclient`
 - [ ] Tester le devcontainer (Rebuild Container) et vérifier l'image Python
@@ -32,7 +33,7 @@
 - [ ] Chaque étape : critère 41.18 (implémentation réelle, test, vérification, gestion d'erreurs, documentation minimale, intégration permissions/audit)
 
 ## Décisions techniques à prendre avant implémentation (sans payer avant vérification)
-- Étape 2 : hébergeur du backend ; fournisseur PostgreSQL (avec pgvector) ; stratégie de migrations
+- Étape 2 : hébergeur du backend ; stratégie de migrations (PostgreSQL de dev : Neon, validé le 2026-10-05)
 - Étape 3 : fournisseur IA ; modèles par niveau de difficulté ; quotas de coûts
 - Étape 5 : fournisseur de recherche Web
 - Étape 6 : règles précises des niveaux de permission 0–5
@@ -41,5 +42,16 @@
 - Étape 13 : distribution Android (APK perso ou Google Play) selon l'usage de l'Accessibility Service
 - Nom définitif du projet (« atlas » provisoire pour le dépôt)
 
-## Étape 2 (NON commencée — attend la validation de l'étape 1)
-- Base de données, migrations, authentification, audit_logs
+## Étape 2a — connexion Neon (écrite, à vérifier par l'utilisateur)
+- [x] Fournisseur de dev validé : Neon (2026-10-05)
+- [x] Code de connexion et 9 tests écrits ; `ruff` OK côté construction
+- [ ] L'utilisateur crée le projet Neon, met `DATABASE_URL` dans `backend/.env` (guide `docs/ETAPE2A_GUIDE_NEON.md`)
+- [ ] `python -m app.db_check` affiche « OK : connecté à PostgreSQL »
+- [ ] `pytest` : 34 passed attendus (non vérifié) ; `ruff` OK
+- [ ] Commit et push (sans `.env` ni `.zip`)
+- [ ] Revérifier les limites gratuites de Neon avant tout usage réel
+
+## Étape 2b / 2c (NON commencées)
+- 2b : Alembic, tables utilisateurs et audit_logs (ajout seul, identifiant de corrélation), extension pgvector plus tard
+- 2c : authentification (mots de passe hachés, tokens à durée limitée)
+- Figer les versions des dépendances (dette) pendant 2b

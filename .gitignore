@@ -38,6 +38,9 @@ dist/
 *.sqlite3
 *.db
 
+# --- Archives de livraison (zip envoyés dans Codespaces) ---
+*.zip
+
 # --- Flutter / Android (pour plus tard) ---
 .dart_tool/
 mobile/build/

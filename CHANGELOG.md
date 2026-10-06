@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-10-05 — Étape 2a : connexion PostgreSQL (Neon), NON vérifiée par exécution
+- Décision utilisateur : Neon (gratuit) comme base de développement.
+- Ajout : `DATABASE_URL` (secret) dans la configuration, `app/db.py` (moteur SQLAlchemy, vérification de connexion), commande `python -m app.db_check`, 9 tests (`tests/test_db.py`), guide `docs/ETAPE2A_GUIDE_NEON.md`, règle `*.zip` dans `.gitignore`.
+- Vérifié côté construction : `compileall` et `ruff` seulement. Tests et connexion réelle à Neon à exécuter par l'utilisateur.
+- Non fait : tables, migrations, authentification, audit_logs.
+
 ## 2026-10-04 — Étape 1 : structure initiale et backend minimal (0.1.0)
 - Ajout : backend FastAPI (`backend/app`), route réelle `GET /health`, configuration par variables d'environnement, middleware `X-Request-ID`, gestionnaire d'erreur 500 sans fuite de détails.
 - Ajout : 25 tests pytest (health, configuration, hygiène des secrets) — exécutés par l'utilisateur dans Codespaces le 2026-10-05 : 25 passed, 1 warning (PyPI inaccessible dans l'environnement de construction).

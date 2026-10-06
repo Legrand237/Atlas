@@ -12,7 +12,9 @@ Existe réellement :
 - une configuration lue depuis l'environnement (`backend/app/config.py`) ;
 - des tests automatisés (`backend/tests/`).
 
-N'existe pas encore : agent, base de données, authentification, permissions, audit, application mobile.
+Étape 2a (écrite, à vérifier) : configuration `DATABASE_URL` et commande `python -m app.db_check` pour tester la connexion à PostgreSQL (Neon). Voir `docs/ETAPE2A_GUIDE_NEON.md`.
+
+N'existe pas encore : agent, tables, authentification, permissions, audit, application mobile.
 `/health` indique seulement que le processus répond (aucune base ni service externe à tester pour l'instant).
 
 ## Lancer le backend

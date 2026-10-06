@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2 non commencée : attend la validation de l'utilisateur.
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion PostgreSQL/Neon) écrite le 2026-10-05, non vérifiée par exécution ; fournisseur de base de développement validé : Neon (voir §19).
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -174,7 +174,8 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 
 ## 14. Décisions qui restent à prendre
 - Fournisseur IA (après vérification des prix et de la disponibilité)
-- Hébergeur backend + base PostgreSQL
+- Hébergeur du backend (non choisi)
+- (Résolu 2026-10-05) Base PostgreSQL de développement : Neon, offre gratuite, validé par l'utilisateur ; à revérifier avant un usage réel (limites gratuites susceptibles de changer)
 - Technologie de la sandbox
 - Source des données de marché
 - Nom définitif du projet (« Atlas » provisoire)
@@ -182,7 +183,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 
 ## 15. Roadmap
 - Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE et vérifiée dans Codespaces (§18), en attente de validation par l'utilisateur
-- Étape 2 : backend, base, migrations, authentification
+- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (écrite, à vérifier) ; 2b tables, migrations, audit_logs ; 2c authentification
 - Étape 3 : LLM Gateway + chat + suivi des coûts
 - Étape 4 : app Flutter (connexion + chat)
 - Étape 5 : outils (base, registre, calculatrice, web) + audit
@@ -286,3 +287,26 @@ Statut : livrée et vérifiée par exécution chez l'utilisateur, dans Codespace
 - Tests : `pytest` (résultat constaté chez l'utilisateur : 25 passed, 1 warning)
 - Serveur : `uvicorn app.main:app --reload` puis `curl http://localhost:8000/health`
 - Contrôle qualité : `ruff check . --output-format=concise` — à lancer depuis `backend/`, pas depuis la racine du dépôt
+
+## 19. Étape 2a — connexion à la base (écrite le 2026-10-05, NON vérifiée par exécution)
+Décision de l'utilisateur (2026-10-05) : Neon, offre gratuite, pour le développement. Informations relevées sur la
+documentation officielle de Neon le 2026-10-05 : 1 Go par projet, mise en veille après 5 minutes d'inactivité, 100 heures de
+calcul par mois et par projet, pas de carte bancaire, pgvector disponible (`CREATE EXTENSION vector`, à faire plus tard).
+Supabase (500 Mo, pause après 1 semaine) a été comparé et écarté.
+
+### Fichiers
+- `backend/app/config.py` : `database_url` (secret, optionnel), converti vers le pilote `postgresql+psycopg://`.
+- `backend/app/db.py` : `build_engine`, `get_engine`, `check_connection` ; erreurs sans mot de passe ni adresse.
+- `backend/app/db_check.py` : commande `python -m app.db_check`.
+- `backend/tests/test_db.py` : 9 tests (attendu au total : 34 avec les 25 de l'étape 1).
+- `backend/.env.example` : variable `DATABASE_URL` vide. `docs/ETAPE2A_GUIDE_NEON.md` : guide. `.gitignore` : `*.zip` ajouté.
+- `requirements.txt` : `sqlalchemy`, `psycopg[binary]` (non figés).
+
+### Statut 41.18
+| Fonctionnalité | Implémentée | Test écrit | Vérifiée par exécution | Erreurs gérées | Doc | Permissions / audit |
+|---|---|---|---|---|---|---|
+| Lecture de DATABASE_URL | oui | oui | NON (construction : PyPI inaccessible ; à lancer chez l'utilisateur) | adresse invalide refusée, vide = non configurée | oui | secret masqué |
+| Connexion PostgreSQL (Neon) | oui | oui (échec réel contrôlé) | NON : jamais testée contre une vraie base Neon | DatabaseNotConfigured / DatabaseUnavailable | oui | pas d'audit avant 2b |
+
+Seules vérifications faites ici : `compileall` et `ruff check` (All checks passed). Les 9 tests n'ont PAS été exécutés.
+Non fait : tables, migrations Alembic, utilisateurs, authentification, audit_logs, pgvector.
