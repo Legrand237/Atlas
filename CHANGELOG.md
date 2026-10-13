@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2026-10-13 — Étape 2b vérifiée
+- Chez l'utilisateur (Codespaces) : `alembic upgrade head` réussi sur Neon ; `pytest` : 75 passed, 5 warnings.
+- Correction : `path_separator = os` dans `alembic.ini` (avertissement Alembic).
+
 ## 2026-10-13 — pytest : affichage d'erreurs raccourci (`--tb=short`)
 - Les erreurs de connexion affichées par pytest en mode long contenaient les paramètres de connexion, mot de passe compris. `--tb=short` ne les affiche plus. À ne jamais coller une sortie de pytest sans l'avoir relue.
 
