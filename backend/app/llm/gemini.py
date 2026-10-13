@@ -77,7 +77,8 @@ class GeminiProvider:
             retry_after = response.headers.get("Retry-After", "")
             raise LLMRateLimited(int(retry_after) if retry_after.isdigit() else None)
         if code >= 500:
-            raise LLMUnavailable(f"http_{code}")
+            status = _provider_status(response)
+            raise LLMUnavailable(f"http_{code}" + (f" ({status})" if status else ""))
         raise LLMRejected(_provider_status(response))
 
     def list_models(self) -> list[str]:

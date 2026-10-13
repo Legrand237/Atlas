@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-10-13 — Étape 3 : premiers essais réels
+- Clé Gemini de l'utilisateur acceptée (liste des modèles obtenue : l'en-tête `x-goog-api-key` est confirmé). Modèles proposés : simple=gemini-3.5-flash-lite, medium=gemini-3.8-flash, hard=gemini-2.5-pro.
+- Premiers `ping` : erreurs 503 (Google) et NOT_FOUND selon les niveaux, en cours d'analyse.
+- `llm_check` : `ping all` teste les trois niveaux et affiche niveau + modèle ; le 503 affiche le statut renvoyé par Google.
+
 ## 2026-10-13 — Étape 3 : passerelle IA Gemini (tests Python NON exécutés)
 - Ajout : `app/llm/` (interface, adaptateur Gemini REST, service avec niveaux, plafonds sur 24 h et audit), `POST /llm/chat`, `python -m app.llm_check` (liste des modèles, ping réel), réglages `GEMINI_API_KEY`, `LLM_MODEL_SIMPLE/MEDIUM/HARD`, plafonds ; `httpx` passe en dépendance d'exécution ; guide `docs/ETAPE3_GUIDE.md`.
 - Tests écrits : 54 (23 adaptateur avec transport de test, 14 configuration, 17 route/service sur base réelle avec double de fournisseur). Attendu : 175 au total (non vérifié).

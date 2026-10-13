@@ -2,6 +2,7 @@
 
     python -m app.llm_check models        # liste les modèles de TON compte et signale ceux configurés
     python -m app.llm_check ping simple   # un petit appel réel (niveau simple, medium ou hard)
+    python -m app.llm_check ping all      # teste les trois niveaux, un par un
 
 Le ``ping`` envoie une phrase de test sans donnée personnelle et affiche la réponse et le nombre de jetons.
 La clé n'est jamais affichée.
@@ -28,7 +29,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("models")
     ping = sub.add_parser("ping")
-    ping.add_argument("tier", choices=TIERS)
+    ping.add_argument("tier", choices=(*TIERS, "all"))
     args = parser.parse_args(argv)
     settings = get_settings()
     try:
@@ -40,20 +41,32 @@ def main(argv: list[str] | None = None) -> int:
                 configured = [t for t in TIERS if settings.model_for_tier(t) == name]
                 print(f"  {name}" + (f"   <- configuré pour : {', '.join(configured)}" if configured else ""))
             return 0
-        model = settings.model_for_tier(args.tier)
-        if model is None:
-            print(f"Aucun modèle configuré pour le niveau {args.tier} (LLM_MODEL_{args.tier.upper()} dans backend/.env).")
-            return 2
+        tiers = TIERS if args.tier == "all" else (args.tier,)
+        worst = 0
+        for tier in tiers:
+            worst = max(worst, _ping(provider, settings, tier))
+        return worst
+    except LLMError as exc:
+        print(f"Échec ({exc.code}) : {exc}")
+        return 1
+
+
+def _ping(provider: GeminiProvider, settings, tier: str) -> int:
+    model = settings.model_for_tier(tier)
+    if model is None:
+        print(f"[{tier}] Aucun modèle configuré (LLM_MODEL_{tier.upper()} dans backend/.env).")
+        return 2
+    try:
         result = provider.generate(
             model=model,
             messages=[ChatMessage("user", "Réponds uniquement par le mot : OK")],
             system=None, max_output_tokens=32, temperature=0.0,
         )  # fmt: skip
     except LLMError as exc:
-        print(f"Échec ({exc.code}) : {exc}")
+        print(f"[{tier}] {model} : Échec ({exc.code}) : {exc}")
         return 1
-    print(f"Modèle : {result.model}\nRéponse : {result.text.strip()}")
-    print(f"Jetons : entrée={result.prompt_tokens} sortie={result.output_tokens} total={result.total_tokens}")
+    print(f"[{tier}] {result.model} : Réponse : {result.text.strip()} (jetons : entrée={result.prompt_tokens} "
+          f"sortie={result.output_tokens} total={result.total_tokens})")
     return 0
 
 
