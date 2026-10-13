@@ -74,4 +74,5 @@
 
 ## Étape 3 — en attente du choix de l'utilisateur
 - [x] Comparaison des fournisseurs : `docs/ETAPE3_COMPARAISON_IA.md`
-- [ ] L'utilisateur choisit l'option A, B ou C (aucun code avant)
+- [x] Option A choisie par l'utilisateur le 2026-10-13 : Google Gemini (palier gratuit pour développer, payant plus tard). Règle : aucune donnée personnelle réelle envoyée tant que le palier est gratuit
+- [ ] Valider le plan détaillé de l'étape 3 (aucun code avant)
