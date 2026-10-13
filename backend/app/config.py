@@ -13,6 +13,8 @@ from typing import Literal
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.llm.base import MODEL_NAME_PATTERN
+
 
 class Settings(BaseSettings):
     """Paramètres de l'application.
@@ -35,6 +37,41 @@ class Settings(BaseSettings):
     session_duration_minutes: int = Field(default=60, ge=5, le=1440)
     login_max_failures: int = Field(default=5, ge=1, le=50)
     login_window_minutes: int = Field(default=15, ge=1, le=1440)
+
+    # Passerelle IA (étape 3). Sans GEMINI_API_KEY ou sans modèle du niveau demandé, /llm/chat répond 503.
+    gemini_api_key: SecretStr | None = None
+    llm_model_simple: str | None = None
+    llm_model_medium: str | None = None
+    llm_model_hard: str | None = None
+    llm_daily_request_limit: int = Field(default=200, ge=1, le=10000)
+    llm_daily_token_limit: int = Field(default=200000, ge=1000, le=10000000)
+    llm_max_output_tokens: int = Field(default=1024, ge=16, le=8192)
+    llm_timeout_seconds: float = Field(default=30.0, ge=5.0, le=120.0)
+
+    @field_validator("gemini_api_key", mode="before")
+    @classmethod
+    def _empty_gemini_key_is_none(cls, value):
+        if value is None:
+            return None
+        raw = value.get_secret_value() if isinstance(value, SecretStr) else str(value)
+        raw = raw.strip()
+        return raw or None
+
+    @field_validator("llm_model_simple", "llm_model_medium", "llm_model_hard", mode="before")
+    @classmethod
+    def _check_model_name(cls, value):
+        """Vide = non configuré ; sinon uniquement lettres, chiffres, point, tiret, souligné."""
+        if value is None:
+            return None
+        raw = str(value).strip()
+        if raw == "":
+            return None
+        if not MODEL_NAME_PATTERN.match(raw):
+            raise ValueError("Nom de modèle invalide (lettres, chiffres, . - _ uniquement).")
+        return raw
+
+    def model_for_tier(self, tier: str) -> str | None:
+        return {"simple": self.llm_model_simple, "medium": self.llm_model_medium, "hard": self.llm_model_hard}[tier]
 
     @field_validator("jwt_secret_key", mode="before")
     @classmethod

@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20). Étape 2c (authentification) : tests VÉRIFIÉS par l'utilisateur le 2026-10-13 (121 passed, ruff OK, migration 0002 appliquée sur Neon) ; création du compte, essai réel de /auth/login restent à faire ; décisions de conception VALIDÉES le 2026-10-13 (voir §21). Étape 3 : comparaison des fournisseurs d'IA écrite (`docs/ETAPE3_COMPARAISON_IA.md`), fournisseur choisi : Google Gemini (option A, 2026-10-13) ; plan détaillé à valider, aucun code.
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20). Étape 2c (authentification) : tests VÉRIFIÉS par l'utilisateur le 2026-10-13 (121 passed, ruff OK, migration 0002 appliquée sur Neon) ; création du compte, essai réel de /auth/login restent à faire ; décisions de conception VALIDÉES le 2026-10-13 (voir §21). Étape 3 : fournisseur choisi Google Gemini (option A) ; passerelle IA écrite le 2026-10-13, NON vérifiée par exécution (voir §22).
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -371,3 +371,23 @@ Vérifications par l'auteur : `compileall`, `ruff`, SQL de 0002, logique des tok
 ### Vérification par l'utilisateur (Codespaces, 2026-10-13)
 `alembic upgrade head` : `0001 -> 0002` appliqué sur Neon. `pytest` : **121 passed, 1 warning en 15,35 s** (le warning est `httpx` déprécié au profit de `httpx2`). `ruff check .` (depuis `backend/`) : All checks passed. Donc argon2, login/me, limitation des essais et migration via Alembic sont vérifiés par les tests sur base réelle.
 Pas encore vérifié : `create-user` (l'invite de mot de passe a été interrompue parce que d'autres commandes avaient été collées en même temps : aucun compte créé), appel réel de `/auth/login` avec curl, réinitialisation du mot de passe Neon (exposé dans une trace) (décisions de conception ci-dessus : validées par l'utilisateur le 2026-10-13).
+
+## 22. Étape 3 — passerelle IA Gemini (écrite le 2026-10-13, tests NON exécutés)
+Fournisseur choisi par l'utilisateur : Google Gemini (option A, palier gratuit pour développer ; aucune donnée personnelle réelle tant que le palier est gratuit car Google réutilise les requêtes). Comparaison : `docs/ETAPE3_COMPARAISON_IA.md`. Guide : `docs/ETAPE3_GUIDE.md`.
+
+### Conception (plan validé par l'utilisateur le 2026-10-13)
+- `backend/app/llm/base.py` (messages, résultat, erreurs à codes stables, interface `LLMProvider`), `gemini.py` (API REST `generateContent` v1beta, clé dans l'en-tête `x-goog-api-key`, httpx), `service.py` (niveau → modèle, plafonds sur 24 h calculés depuis `audit_logs`, audit de chaque appel), `app/api/llm.py` (`POST /llm/chat`, permission niveau 1), `app/llm_check.py` (`models`, `ping`).
+- Trois niveaux `simple` / `medium` / `hard` → modèles réglés dans `backend/.env` (`LLM_MODEL_*`), jamais écrits dans le code ; noms à choisir dans la liste réelle du compte.
+- Plafonds par utilisateur : 200 requêtes et 200 000 jetons / 24 h (réglables), sortie max 1 024 jetons, conversation max 32 000 caractères. Refus audité (`denied`, raison `daily_*_limit`) et non compté.
+- Audit `llm_chat` : modèle, niveau, jetons (`usage.prompt/output/total`), durée, résultat ; jamais le contenu ni la clé. Pas de nouvelle migration.
+- Erreurs : 503 non configuré / indisponible, 429 plafond ou quota fournisseur (+ Retry-After), 504 délai, 422 contenu bloqué, 502 réponse refusée ou inutilisable, 413 conversation trop longue.
+
+### Statut 41.18
+| Fonctionnalité | Implémentée | Test écrit | Vérifiée par exécution | Erreurs gérées | Doc | Permissions / audit |
+|---|---|---|---|---|---|---|
+| Adaptateur Gemini | oui | oui (transport de test, 23 tests) | NON (httpx non installable ici ; aucun appel réel à Google) | 429/4xx/5xx/délai/réseau/bloqué/vide | oui | — |
+| Config LLM | oui | oui (14) | NON | valeurs invalides refusées | oui | clé en SecretStr |
+| Service + POST /llm/chat | oui | oui (17, base réelle, double de fournisseur) | NON | oui | oui | niveau 1, audit de chaque appel |
+| llm_check | oui | non (outil de vérification manuelle) | NON | oui | oui | — |
+
+Seules vérifications par l'auteur : `ruff check` et `compileall`. Résultat attendu chez l'utilisateur : 175 tests (121 + 54, non vérifié). L'appel réel à Gemini n'a jamais été exécuté : à faire par l'utilisateur avec sa clé.

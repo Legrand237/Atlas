@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-10-13 — Étape 3 : passerelle IA Gemini (tests Python NON exécutés)
+- Ajout : `app/llm/` (interface, adaptateur Gemini REST, service avec niveaux, plafonds sur 24 h et audit), `POST /llm/chat`, `python -m app.llm_check` (liste des modèles, ping réel), réglages `GEMINI_API_KEY`, `LLM_MODEL_SIMPLE/MEDIUM/HARD`, plafonds ; `httpx` passe en dépendance d'exécution ; guide `docs/ETAPE3_GUIDE.md`.
+- Tests écrits : 54 (23 adaptateur avec transport de test, 14 configuration, 17 route/service sur base réelle avec double de fournisseur). Attendu : 175 au total (non vérifié).
+- Vérifié côté construction : `ruff`, `compileall`. Aucun appel réel à Google (réseau bloqué ici).
+
 ## 2026-10-13 — Étape 3 : comparaison des fournisseurs d'IA (aucun code)
 - Décisions de conception de 2c validées par l'utilisateur.
 - Ajout de `docs/ETAPE3_COMPARAISON_IA.md` (Anthropic, Gemini, Groq, OpenRouter). Fournisseur choisi par l'utilisateur : Google Gemini (option A).

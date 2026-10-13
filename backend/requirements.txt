@@ -13,3 +13,4 @@ psycopg[binary]
 alembic
 argon2-cffi
 PyJWT
+httpx

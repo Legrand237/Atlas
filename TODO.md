@@ -75,4 +75,9 @@
 ## Étape 3 — en attente du choix de l'utilisateur
 - [x] Comparaison des fournisseurs : `docs/ETAPE3_COMPARAISON_IA.md`
 - [x] Option A choisie par l'utilisateur le 2026-10-13 : Google Gemini (palier gratuit pour développer, payant plus tard). Règle : aucune donnée personnelle réelle envoyée tant que le palier est gratuit
-- [ ] Valider le plan détaillé de l'étape 3 (aucun code avant)
+- [x] Plan de l'étape 3 validé le 2026-10-13
+- [x] Code écrit : `app/llm/`, `POST /llm/chat`, `python -m app.llm_check` (guide `docs/ETAPE3_GUIDE.md`)
+- [ ] `git pull`, `pip install -r requirements-dev.txt`, `pytest` : 175 passed attendus (non vérifié) ; `ruff` OK
+- [ ] Créer la clé Gemini (AI Studio, gratuite) dans `backend/.env`, choisir les 3 modèles (`python -m app.llm_check models`)
+- [ ] `python -m app.llm_check ping simple` : réponse réelle de Gemini
+- [ ] Essai de `/llm/chat` avec curl ; validation de l'étape 3 par l'utilisateur
