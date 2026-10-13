@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2026-10-13 — pytest : affichage d'erreurs raccourci (`--tb=short`)
+- Les erreurs de connexion affichées par pytest en mode long contenaient les paramètres de connexion, mot de passe compris. `--tb=short` ne les affiche plus. À ne jamais coller une sortie de pytest sans l'avoir relue.
+
 ## 2026-10-06 — Étape 2b : migrations, users, audit_logs (tests Python NON exécutés)
 - Étape 2a validée et poussée par l'utilisateur (Neon connecté, 34 tests réussis).
 - Ajout : Alembic (`alembic.ini`, `app/db/alembic/`), migration `0001` (tables `users` et `audit_logs`), modèles SQLAlchemy, `record_event` / `validate_event`, déclencheurs PostgreSQL « ajout seul » sur `audit_logs`, `session_scope`, guide `docs/ETAPE2B_GUIDE.md`.
