@@ -65,9 +65,13 @@
 - [x] `alembic upgrade head` : 0001 -> 0002 appliqué sur Neon
 - [ ] `python -m app.manage create-user ...` : à lancer SEUL (la 1re tentative a été interrompue, aucun compte créé)
 - [x] `pytest` : 121 passed, 1 warning ; `ruff` : All checks passed
-- [ ] Valider les décisions de conception (§21 : pas d'inscription publique, JWT 60 min, 5 échecs/15 min, pas de refresh token)
+- [x] Décisions de conception validées par l'utilisateur le 2026-10-13 (pas d'inscription publique, JWT 60 min sans refresh token, 5 échecs/15 min)
 
 ## Après 2c (idées notées)
 - Authentification : colonne de mot de passe (migration 0002), hachage, tokens à durée limitée, routes ; premiers événements d'audit réels
 - Plus tard : extension pgvector (étape 8), rôle de base INSERT-seul pour l'audit (production), permission_grants, tasks (clé étrangère de audit_logs.task_id)
 - Figer les versions des dépendances (dette) pendant 2b
+
+## Étape 3 — en attente du choix de l'utilisateur
+- [x] Comparaison des fournisseurs : `docs/ETAPE3_COMPARAISON_IA.md`
+- [ ] L'utilisateur choisit l'option A, B ou C (aucun code avant)

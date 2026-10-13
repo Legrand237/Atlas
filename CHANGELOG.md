@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2026-10-13 — Étape 3 : comparaison des fournisseurs d'IA (aucun code)
+- Décisions de conception de 2c validées par l'utilisateur.
+- Ajout de `docs/ETAPE3_COMPARAISON_IA.md` (Anthropic, Gemini, Groq, OpenRouter). Choix en attente.
+
 ## 2026-10-13 — Étape 2c vérifiée (tests)
 - Chez l'utilisateur (Codespaces) : migration 0002 appliquée sur Neon ; `pytest` : 121 passed, 1 warning ; `ruff` : All checks passed.
 - Reste : création du compte (`create-user`, à lancer seul), essai réel de `/auth/login`, réinitialisation du mot de passe Neon, validation des décisions de conception.
