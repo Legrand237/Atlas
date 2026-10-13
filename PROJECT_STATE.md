@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion PostgreSQL/Neon) écrite le 2026-10-05, non vérifiée par exécution ; fournisseur de base de développement validé : Neon (voir §19).
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) écrite le 2026-10-06, SQL vérifié sur PostgreSQL 16 local, tests Python non exécutés (voir §20).
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -183,7 +183,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 
 ## 15. Roadmap
 - Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE et vérifiée dans Codespaces (§18), en attente de validation par l'utilisateur
-- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (écrite, à vérifier) ; 2b tables, migrations, audit_logs ; 2c authentification
+- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (validée) ; 2b tables, migrations, audit_logs (écrite, à vérifier chez l'utilisateur) ; 2c authentification
 - Étape 3 : LLM Gateway + chat + suivi des coûts
 - Étape 4 : app Flutter (connexion + chat)
 - Étape 5 : outils (base, registre, calculatrice, web) + audit
@@ -310,3 +310,30 @@ Supabase (500 Mo, pause après 1 semaine) a été comparé et écarté.
 
 Seules vérifications faites ici : `compileall` et `ruff check` (All checks passed). Les 9 tests n'ont PAS été exécutés.
 Non fait : tables, migrations Alembic, utilisateurs, authentification, audit_logs, pgvector.
+
+## 20. Étape 2b — migrations, users, audit_logs (écrite le 2026-10-06, tests Python NON exécutés)
+Contexte : l'étape 2a est validée et poussée par l'utilisateur (Neon connecté, `db_check` OK, 34 tests réussis).
+
+### Fichiers
+- `backend/app/db.py` devient le paquet `backend/app/db/` (conforme à l'arborescence §8) : `session.py` (ancien `db.py` + `session_scope`, option `options` du moteur), `models.py` (`User`, `AuditLog`), `audit.py` (`validate_event`, `record_event`), `__init__.py` (ré-exporte les noms de `session`). L'utilisateur doit supprimer l'ancien `backend/app/db.py` (voir guide).
+- `backend/alembic.ini`, `backend/app/db/alembic/{env.py,script.py.mako,versions/0001_users_audit_logs.py}`.
+- `backend/app/core/request_id.py` : ajout de `is_valid_request_id` (réutilise la règle existante de l'identifiant de corrélation).
+- Tests : `tests/test_audit_validation.py` (26 cas, sans base), `tests/test_db_migrations.py` (11, sur la vraie base dans un schéma temporaire), `tests/test_db.py` (patch adapté au nouveau chemin).
+- `requirements.txt` : ajout d'`alembic` (non figé, comme le reste). `docs/ETAPE2B_GUIDE.md`.
+
+### Conception
+- `users` : id uuid, email unique en minuscules (contrainte CHECK + normalisation dans le modèle), display_name, is_active, created_at, updated_at. Pas de mot de passe avant 2c.
+- `audit_logs` (§3.7, 41.15) : occurred_at, correlation_id (= X-Request-ID), actor_type (user/agent/system), user_id (clé étrangère, suppression refusée), task_id (sans clé étrangère : table `tasks` absente), tool, action, permission_level (0–5), authorization_decision (allowed/denied/confirmation_required/not_applicable), decision_reason (41.16), result (success/failure/denied), error, details (jsonb, clés sensibles refusées par `record_event`).
+- Ajout seul : déclencheurs PostgreSQL contre UPDATE, DELETE, TRUNCATE. Limite : un propriétaire de la base peut les supprimer ; rôle INSERT-seul à prévoir en production.
+- Migration en SQL écrit à la main (explicite, vérifiable) ; les modèles doivent rester identiques (test de cohérence des colonnes).
+
+### Statut 41.18
+| Fonctionnalité | Implémentée | Test écrit | Vérifiée par exécution | Erreurs gérées | Doc | Permissions / audit |
+|---|---|---|---|---|---|---|
+| Migration 0001 (SQL) | oui | oui | SQL exécuté sur PostgreSQL 16.15 local (hors Alembic) : création, 17 scénarios, retour arrière, ré-application : tous réussis. Via Alembic + Neon : NON (à faire par l'utilisateur) | contraintes CHECK/FK/UNIQUE | oui | — |
+| users | oui | oui | SQL : oui (doublon, majuscules, sans @). Modèle Python : NON | contraintes, ValueError | oui | pas d'authentification avant 2c |
+| audit_logs ajout seul | oui | oui | SQL : UPDATE, DELETE, TRUNCATE refusés, clé étrangère, défauts, contraintes : oui. Via `record_event` : NON | AuditError + contraintes | oui | base de l'audit 41.15 ; aucune route ne l'alimente encore |
+| record_event / validate_event | oui | oui (26 + 4 sur base) | NON (SQLAlchemy non installable ici) | AuditError | oui | clés sensibles refusées |
+
+### Vérifications faites par l'auteur
+`compileall` et `ruff check` : réussis. SQL de la migration (extrait par un harnais sans Alembic) exécuté sur PostgreSQL 16.15 local : 17 scénarios réussis. Python, SQLAlchemy, Alembic : jamais exécutés (PyPI inaccessible). Résultat attendu chez l'utilisateur : 75 tests (non vérifié).

@@ -12,9 +12,11 @@ Existe réellement :
 - une configuration lue depuis l'environnement (`backend/app/config.py`) ;
 - des tests automatisés (`backend/tests/`).
 
-Étape 2a (écrite, à vérifier) : configuration `DATABASE_URL` et commande `python -m app.db_check` pour tester la connexion à PostgreSQL (Neon). Voir `docs/ETAPE2A_GUIDE_NEON.md`.
+Étape 2a (écrite, à vérifier chez l'utilisateur) : configuration `DATABASE_URL` et commande `python -m app.db_check` pour tester la connexion à PostgreSQL (Neon). Voir `docs/ETAPE2A_GUIDE_NEON.md`.
 
-N'existe pas encore : agent, tables, authentification, permissions, audit, application mobile.
+Étape 2b (écrite, à vérifier) : migrations Alembic (`alembic upgrade head`), tables `users` et `audit_logs` (ajout seul), fonction `record_event`. Voir `docs/ETAPE2B_GUIDE.md`.
+
+N'existe pas encore : agent, autres tables, authentification, permissions, audit, application mobile.
 `/health` indique seulement que le processus répond (aucune base ni service externe à tester pour l'instant).
 
 ## Lancer le backend

@@ -43,7 +43,7 @@ def test_database_url_is_hidden_in_repr(monkeypatch):
 
 def test_get_engine_without_configuration_fails_clearly(monkeypatch):
     monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setattr("app.db.get_settings", lambda: Settings(_env_file=None))
+    monkeypatch.setattr("app.db.session.get_settings", lambda: Settings(_env_file=None))
     get_engine.cache_clear()
     with pytest.raises(DatabaseNotConfigured):
         get_engine()

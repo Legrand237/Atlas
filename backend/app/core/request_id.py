@@ -20,9 +20,14 @@ REQUEST_ID_HEADER = "X-Request-ID"
 _VALID_REQUEST_ID = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
+def is_valid_request_id(candidate: str | None) -> bool:
+    """Vrai si ``candidate`` est un identifiant de requête / de corrélation acceptable."""
+    return candidate is not None and _VALID_REQUEST_ID.fullmatch(candidate) is not None
+
+
 def resolve_request_id(candidate: str | None) -> str:
     """Retourne ``candidate`` s'il est valide, sinon un nouvel identifiant."""
-    if candidate is not None and _VALID_REQUEST_ID.fullmatch(candidate):
+    if is_valid_request_id(candidate):
         return candidate
     return uuid.uuid4().hex
 

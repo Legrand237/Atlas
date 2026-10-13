@@ -43,6 +43,7 @@
 - Nom définitif du projet (« atlas » provisoire pour le dépôt)
 
 ## Étape 2a — connexion Neon (écrite, à vérifier par l'utilisateur)
+- [x] Étape 2a validée et poussée (2026-10-06) : Neon connecté, db_check OK, 34 tests réussis
 - [x] Fournisseur de dev validé : Neon (2026-10-05)
 - [x] Code de connexion et 9 tests écrits ; `ruff` OK côté construction
 - [ ] L'utilisateur crée le projet Neon, met `DATABASE_URL` dans `backend/.env` (guide `docs/ETAPE2A_GUIDE_NEON.md`)
@@ -51,7 +52,14 @@
 - [ ] Commit et push (sans `.env` ni `.zip`)
 - [ ] Revérifier les limites gratuites de Neon avant tout usage réel
 
-## Étape 2b / 2c (NON commencées)
-- 2b : Alembic, tables utilisateurs et audit_logs (ajout seul, identifiant de corrélation), extension pgvector plus tard
-- 2c : authentification (mots de passe hachés, tokens à durée limitée)
+## Étape 2b — écrite, à vérifier par l'utilisateur (guide `docs/ETAPE2B_GUIDE.md`)
+- [x] Alembic, tables users et audit_logs (ajout seul), record_event, tests écrits ; SQL vérifié sur PostgreSQL 16 local
+- [ ] `git pull`, puis installer alembic (`pip install -r requirements-dev.txt`) ; `backend/app/db.py` est déjà supprimé
+- [ ] `alembic upgrade head` puis `alembic current` → `0001 (head)`
+- [ ] `pytest` : 75 passed attendus, 0 skipped (non vérifié) ; `ruff` OK
+- [ ] Vérifier dans Neon que `users`, `audit_logs`, `alembic_version` existent
+
+## Étape 2c (NON commencée)
+- Authentification : colonne de mot de passe (migration 0002), hachage, tokens à durée limitée, routes ; premiers événements d'audit réels
+- Plus tard : extension pgvector (étape 8), rôle de base INSERT-seul pour l'audit (production), permission_grants, tasks (clé étrangère de audit_logs.task_id)
 - Figer les versions des dépendances (dette) pendant 2b

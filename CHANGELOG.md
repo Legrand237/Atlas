@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-10-06 — Étape 2b : migrations, users, audit_logs (tests Python NON exécutés)
+- Étape 2a validée et poussée par l'utilisateur (Neon connecté, 34 tests réussis).
+- Ajout : Alembic (`alembic.ini`, `app/db/alembic/`), migration `0001` (tables `users` et `audit_logs`), modèles SQLAlchemy, `record_event` / `validate_event`, déclencheurs PostgreSQL « ajout seul » sur `audit_logs`, `session_scope`, guide `docs/ETAPE2B_GUIDE.md`.
+- Modification : `app/db.py` devient le paquet `app/db/` (ancien fichier à supprimer) ; `request_id.py` gagne `is_valid_request_id` ; `test_db.py` adapté ; `alembic` ajouté à `requirements.txt`.
+- Tests écrits : 37 (26 sans base, 11 sur la vraie base dans un schéma temporaire). Attendu : 71 au total avant la correction ci-dessous (non vérifié).
+- Vérifié côté construction : `compileall`, `ruff`, et le SQL de la migration sur PostgreSQL 16.15 local (17 scénarios, retour arrière). Python/Alembic non exécutés.
+- Correction des tests de migration : connexion directe Neon (retrait de `-pooler` ou `DATABASE_URL_DIRECT`), garde-fou `current_schema()`, 4 tests de conversion d'adresse (attendu : 75 au total, non vérifié).
+- Non fait : mot de passe et authentification (2c), autres tables, pgvector.
+
 ## 2026-10-05 — Étape 2a : connexion PostgreSQL (Neon), NON vérifiée par exécution
 - Décision utilisateur : Neon (gratuit) comme base de développement.
 - Ajout : `DATABASE_URL` (secret) dans la configuration, `app/db.py` (moteur SQLAlchemy, vérification de connexion), commande `python -m app.db_check`, 9 tests (`tests/test_db.py`), guide `docs/ETAPE2A_GUIDE_NEON.md`, règle `*.zip` dans `.gitignore`.
