@@ -48,12 +48,13 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
-    """Compte utilisateur. Le mot de passe et l'authentification arrivent à l'étape 2c."""
+    """Compte utilisateur. ``password_hash`` est vide (NULL) tant qu'aucun mot de passe n'est défini : connexion impossible."""
 
     __tablename__ = "users"
     __table_args__ = (
         UniqueConstraint("email"),
         CheckConstraint("email = lower(email) AND position('@' in email) > 1", name="email_format"),
+        CheckConstraint("password_hash IS NULL OR length(password_hash) > 0", name="password_hash_not_empty"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -61,6 +62,7 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String(320))
     display_name: Mapped[str | None] = mapped_column(String(100))
+    password_hash: Mapped[str | None] = mapped_column(Text)  # empreinte argon2 (migration 0002) ; jamais le mot de passe
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20).
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20). Étape 2c (authentification) écrite et poussée le 2026-10-13, NON vérifiée par exécution (voir §21).
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -183,7 +183,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 
 ## 15. Roadmap
 - Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE et vérifiée dans Codespaces (§18), en attente de validation par l'utilisateur
-- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (validée) ; 2b tables, migrations, audit_logs (vérifiée 2026-10-13) ; 2c authentification
+- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (validée) ; 2b tables, migrations, audit_logs (vérifiée 2026-10-13) ; 2c authentification (écrite 2026-10-13, à vérifier)
 - Étape 3 : LLM Gateway + chat + suivi des coûts
 - Étape 4 : app Flutter (connexion + chat)
 - Étape 5 : outils (base, registre, calculatrice, web) + audit
@@ -341,3 +341,29 @@ Contexte : l'étape 2a est validée et poussée par l'utilisateur (Neon connect�
 ### Vérification par l'utilisateur (Codespaces, 2026-10-13)
 `alembic upgrade head` : réussi (Neon). `pytest` : **75 passed, 5 warnings en 4,84 s** (tests_audit_validation 26, config 4, db 9, db_migrations 15, health 11, repo_hygiene 10 : les 11 tests sur base réelle + 4 de conversion d'adresse de test_db_migrations). Avertissements sans effet : `httpx` déprécié au profit de `httpx2` (starlette), `path_separator` absent d'`alembic.ini` (corrigé ensuite).
 Incident : une trace pytest affichait le mot de passe Neon (paramètres de connexion en mode d'erreur long) ; mot de passe à réinitialiser (demandé à l'utilisateur) et `--tb=short` ajouté à `pytest.ini`.
+
+## 21. Étape 2c — authentification (écrite le 2026-10-13, tests Python NON exécutés)
+### Décisions de conception (à valider par l'utilisateur)
+- Pas d'inscription publique : agent personnel ; les comptes se créent par `python -m app.manage create-user` (mot de passe demandé au clavier).
+- Mots de passe : argon2 (`argon2-cffi`), 12 à 128 caractères ; stockage de l'empreinte seule (`users.password_hash`, nullable : un compte sans empreinte ne peut pas se connecter).
+- Token d'accès : JWT HS256 (`PyJWT`), émetteur « atlas », durée 60 min (`SESSION_DURATION_MINUTES`, 5 à 1440), clé `JWT_SECRET_KEY` (≥ 32 caractères, jamais dans Git). Pas de refresh token ni de déconnexion côté serveur à ce stade.
+- Limitation des essais : 5 échecs en 15 minutes (réglable) → 429 + `Retry-After` ; une réussite remet le compteur à zéro.
+- Audit : chaque tentative de connexion → `audit_logs` (action `login`, identifiant de corrélation = X-Request-ID, sans mot de passe ni e-mail) ; création de compte → `user_create`.
+- Réponses 401 identiques pour compte inconnu / mauvais mot de passe / compte inactif ; calcul de hachage factice pour égaliser le temps de réponse.
+- Niveaux de permission : `/auth/login` = 0 (public, limité), `/auth/me` = 1 (connecté). Le Policy Engine arrive à l'étape 6.
+- Base indisponible ou non configurée → 503 `database_unavailable` sans détail.
+
+### Fichiers
+`backend/app/auth/{passwords,tokens,service,deps}.py`, `backend/app/api/auth.py`, `backend/app/manage.py`, `backend/app/db/alembic/versions/0002_users_password_hash.py`, modifs : `config.py`, `db/models.py`, `db/session.py` (`get_session`), `core/errors.py` (503), `main.py`, `.env.example` (`JWT_SECRET_KEY=` vide), `requirements.txt` (`argon2-cffi`, `PyJWT`). Tests : `test_auth_units.py` (33), `test_auth_api.py` (13, base réelle), `tests/pg_support.py` ; `test_audit_validation.py` (tête de migration = 0002). Guide : `docs/ETAPE2C_GUIDE.md`.
+
+### Statut 41.18
+| Fonctionnalité | Implémentée | Test écrit | Vérifiée par exécution | Erreurs gérées | Doc | Permissions / audit |
+|---|---|---|---|---|---|---|
+| Migration 0002 | oui | oui | SQL exécuté sur PostgreSQL 16.15 local (compte existant conservé, contrainte, retour arrière) : OUI. Via Alembic/Neon : NON | contrainte CHECK | oui | — |
+| Tokens JWT | oui | oui | 12 contrôles exécutés avec PyJWT 2.14.0 (aller-retour, expiré, clé fausse, falsifié, alg none, émetteur, sub) : OUI. Pytest : NON | TokenError | oui | — |
+| Mots de passe argon2 | oui | oui | NON (argon2-cffi non installable ici) | WeakPassword, empreinte invalide → faux | oui | — |
+| POST /auth/login, GET /auth/me | oui | oui (base réelle) | NON | 401/429/503 | oui | audit de chaque tentative |
+| Limitation des essais | oui | oui | NON | 429 | oui | audit result=denied |
+| create-user (CLI) | oui | oui (service) | NON | doublon, faible, e-mail | oui | audit user_create |
+
+Seules vérifications par l'auteur : `compileall`, `ruff`, SQL de 0002, logique des tokens. Résultat attendu chez l'utilisateur : 121 tests (non vérifié).

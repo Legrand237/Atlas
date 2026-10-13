@@ -9,6 +9,7 @@ import logging
 from fastapi import FastAPI
 
 from app import SERVICE_NAME, __version__
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.config import get_settings
 from app.core.errors import register_exception_handlers
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
     register_exception_handlers(app)
     app.include_router(health_router)
+    app.include_router(auth_router)
 
     logging.getLogger("atlas").info(
         "%s %s démarré (environment=%s)", SERVICE_NAME, __version__, settings.environment

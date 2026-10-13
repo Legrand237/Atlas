@@ -59,7 +59,14 @@
 - [x] `pytest` : 75 passed (2026-10-13) ; `ruff` OK
 - [ ] Réinitialiser le mot de passe Neon (il est apparu dans une trace de test) et mettre à jour `backend/.env`
 
-## Étape 2c (NON commencée)
+## Étape 2c — écrite 2026-10-13, à vérifier par l'utilisateur (guide `docs/ETAPE2C_GUIDE.md`)
+- [ ] `git pull`, `pip install -r requirements-dev.txt`, générer `JWT_SECRET_KEY` dans `backend/.env`
+- [ ] `alembic upgrade head` → `0002 (head)`
+- [ ] `python -m app.manage create-user ...` : compte créé
+- [ ] `pytest` : 121 passed attendus (non vérifié) ; `ruff` OK
+- [ ] Valider les décisions de conception (§21 : pas d'inscription publique, JWT 60 min, 5 échecs/15 min, pas de refresh token)
+
+## Après 2c (idées notées)
 - Authentification : colonne de mot de passe (migration 0002), hachage, tokens à durée limitée, routes ; premiers événements d'audit réels
 - Plus tard : extension pgvector (étape 8), rôle de base INSERT-seul pour l'audit (production), permission_grants, tasks (clé étrangère de audit_logs.task_id)
 - Figer les versions des dépendances (dette) pendant 2b

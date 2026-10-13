@@ -78,3 +78,9 @@ def session_scope(engine: Engine | None = None) -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+
+def get_session() -> Iterator[Session]:
+    """Dépendance FastAPI : une session par requête (commit si tout va bien, rollback sinon)."""
+    with session_scope() as session:
+        yield session

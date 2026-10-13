@@ -10,6 +10,7 @@ from app.db.session import (
     build_engine,
     check_connection,
     get_engine,
+    get_session,
     session_scope,
 )
 
@@ -19,5 +20,6 @@ __all__ = [
     "build_engine",
     "check_connection",
     "get_engine",
+    "get_session",
     "session_scope",
 ]

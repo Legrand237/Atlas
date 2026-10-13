@@ -16,6 +16,8 @@ Existe réellement :
 
 Étape 2b (écrite, à vérifier) : migrations Alembic (`alembic upgrade head`), tables `users` et `audit_logs` (ajout seul), fonction `record_event`. Voir `docs/ETAPE2B_GUIDE.md`.
 
+Étape 2c (écrite, à vérifier) : authentification (`POST /auth/login`, `GET /auth/me`, `python -m app.manage create-user`). Voir `docs/ETAPE2C_GUIDE.md`.
+
 N'existe pas encore : agent, autres tables, authentification, permissions, audit, application mobile.
 `/health` indique seulement que le processus répond (aucune base ni service externe à tester pour l'instant).
 

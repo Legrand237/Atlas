@@ -10,7 +10,7 @@ Règles :
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,6 +30,25 @@ class Settings(BaseSettings):
     environment: Literal["development", "test", "production"] = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     database_url: SecretStr | None = None
+    # Authentification (étape 2c). Sans JWT_SECRET_KEY, l'API démarre mais /auth/login répond 503.
+    jwt_secret_key: SecretStr | None = None
+    session_duration_minutes: int = Field(default=60, ge=5, le=1440)
+    login_max_failures: int = Field(default=5, ge=1, le=50)
+    login_window_minutes: int = Field(default=15, ge=1, le=1440)
+
+    @field_validator("jwt_secret_key", mode="before")
+    @classmethod
+    def _check_jwt_secret_key(cls, value):
+        """Vide = non configurée ; sinon au moins 32 caractères (clé de signature des tokens)."""
+        if value is None:
+            return None
+        raw = value.get_secret_value() if isinstance(value, SecretStr) else str(value)
+        raw = raw.strip()
+        if raw == "":
+            return None
+        if len(raw) < 32:
+            raise ValueError("JWT_SECRET_KEY doit contenir au moins 32 caractères.")
+        return raw
 
     @field_validator("database_url", mode="before")
     @classmethod

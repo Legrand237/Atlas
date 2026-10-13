@@ -89,4 +89,4 @@ def test_audit_log_model_matches_the_table_name():
 
 def test_migrations_have_a_single_head():
     config = Config(str(BACKEND_DIR / "alembic.ini"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0001"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0002"]
