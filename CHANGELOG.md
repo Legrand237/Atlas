@@ -1,9 +1,13 @@
 # CHANGELOG
 
-## 2026-10-13 — Étape 2c : authentification (tests Python NON exécutés)
+## 2026-10-13 — Étape 2c vérifiée (tests)
+- Chez l'utilisateur (Codespaces) : migration 0002 appliquée sur Neon ; `pytest` : 121 passed, 1 warning ; `ruff` : All checks passed.
+- Reste : création du compte (`create-user`, à lancer seul), essai réel de `/auth/login`, réinitialisation du mot de passe Neon, validation des décisions de conception.
+
+## 2026-10-13 — Étape 2c : authentification (écrite ; tests exécutés ensuite, voir ci-dessus)
 - Ajout : migration `0002` (`users.password_hash`), `POST /auth/login`, `GET /auth/me`, mots de passe argon2, tokens JWT (HS256, 60 min), limitation des essais (5 échecs / 15 min), audit de chaque tentative, commande `python -m app.manage create-user`, réponses 503 sans détail si la base est indisponible, `get_session`.
 - Pas d'inscription publique (choix de conception, à valider). Dépendances ajoutées : `argon2-cffi`, `PyJWT`.
-- Tests écrits : 46 (33 sans base, 13 sur base réelle). Attendu : 121 au total (non vérifié).
+- Tests écrits : 46 (33 sans base, 13 sur base réelle). Total : 121 (vérifié ensuite).
 - Vérifié côté construction : `ruff`, `compileall`, SQL de 0002 sur PostgreSQL 16 local, logique des tokens avec PyJWT 2.14.0. Argon2, FastAPI, SQLAlchemy non exécutés.
 
 ## 2026-10-13 — Étape 2b vérifiée

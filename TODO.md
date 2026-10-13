@@ -59,11 +59,12 @@
 - [x] `pytest` : 75 passed (2026-10-13) ; `ruff` OK
 - [ ] Réinitialiser le mot de passe Neon (il est apparu dans une trace de test) et mettre à jour `backend/.env`
 
-## Étape 2c — écrite 2026-10-13, à vérifier par l'utilisateur (guide `docs/ETAPE2C_GUIDE.md`)
-- [ ] `git pull`, `pip install -r requirements-dev.txt`, générer `JWT_SECRET_KEY` dans `backend/.env`
-- [ ] `alembic upgrade head` → `0002 (head)`
-- [ ] `python -m app.manage create-user ...` : compte créé
-- [ ] `pytest` : 121 passed attendus (non vérifié) ; `ruff` OK
+## Étape 2c — tests vérifiés 2026-10-13 ; reste le compte et la validation (guide `docs/ETAPE2C_GUIDE.md`)
+- [x] `git pull`, `pip install -r requirements-dev.txt`
+- [ ] Générer `JWT_SECRET_KEY` dans `backend/.env`
+- [x] `alembic upgrade head` : 0001 -> 0002 appliqué sur Neon
+- [ ] `python -m app.manage create-user ...` : à lancer SEUL (la 1re tentative a été interrompue, aucun compte créé)
+- [x] `pytest` : 121 passed, 1 warning ; `ruff` : All checks passed
 - [ ] Valider les décisions de conception (§21 : pas d'inscription publique, JWT 60 min, 5 échecs/15 min, pas de refresh token)
 
 ## Après 2c (idées notées)

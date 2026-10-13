@@ -1,6 +1,6 @@
 # PROJECT_STATE.md — Agent IA personnel (nom de code : « Atlas »)
 
-Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20). Étape 2c (authentification) écrite et poussée le 2026-10-13, NON vérifiée par exécution (voir §21).
+Dernière mise à jour : 2026-10-05 — Étape 1 livrée et vérifiée par exécution chez l'utilisateur (Codespaces) : 25 tests réussis, /health répond. Quelques vérifications restent à confirmer (voir §18). Cahier des charges et architecture v2 validés par l'utilisateur. Étape 2a (connexion Neon) validée et poussée (2026-10-06). Étape 2b (Alembic, users, audit_logs) VÉRIFIÉE par l'utilisateur le 2026-10-13 : `alembic upgrade head` réussi sur Neon, 75 tests réussis (voir §20). Étape 2c (authentification) : tests VÉRIFIÉS par l'utilisateur le 2026-10-13 (121 passed, ruff OK, migration 0002 appliquée sur Neon) ; création du compte, essai réel de /auth/login et validation des décisions de conception restent à faire (voir §21).
 
 Règles du projet : pas de faux services, pas de mocks présentés comme fonctionnels, pas de prototype jetable ; application production-ready construite progressivement ; aucun service payant ni clé API avant décision explicite.
 
@@ -183,7 +183,7 @@ Modèle IA (poste principal), hébergement, base de données, recherche Web, don
 
 ## 15. Roadmap
 - Étape 1 : environnement (GitHub, Codespaces, dépôt, backend minimal + test) — LIVRÉE et vérifiée dans Codespaces (§18), en attente de validation par l'utilisateur
-- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (validée) ; 2b tables, migrations, audit_logs (vérifiée 2026-10-13) ; 2c authentification (écrite 2026-10-13, à vérifier)
+- Étape 2 : backend, base, migrations, authentification — découpée : 2a connexion Neon (validée) ; 2b tables, migrations, audit_logs (vérifiée 2026-10-13) ; 2c authentification (tests vérifiés 2026-10-13 ; compte et validation de conception à finir)
 - Étape 3 : LLM Gateway + chat + suivi des coûts
 - Étape 4 : app Flutter (connexion + chat)
 - Étape 5 : outils (base, registre, calculatrice, web) + audit
@@ -342,7 +342,7 @@ Contexte : l'étape 2a est validée et poussée par l'utilisateur (Neon connect�
 `alembic upgrade head` : réussi (Neon). `pytest` : **75 passed, 5 warnings en 4,84 s** (tests_audit_validation 26, config 4, db 9, db_migrations 15, health 11, repo_hygiene 10 : les 11 tests sur base réelle + 4 de conversion d'adresse de test_db_migrations). Avertissements sans effet : `httpx` déprécié au profit de `httpx2` (starlette), `path_separator` absent d'`alembic.ini` (corrigé ensuite).
 Incident : une trace pytest affichait le mot de passe Neon (paramètres de connexion en mode d'erreur long) ; mot de passe à réinitialiser (demandé à l'utilisateur) et `--tb=short` ajouté à `pytest.ini`.
 
-## 21. Étape 2c — authentification (écrite le 2026-10-13, tests Python NON exécutés)
+## 21. Étape 2c — authentification (écrite le 2026-10-13, tests VÉRIFIÉS le 2026-10-13)
 ### Décisions de conception (à valider par l'utilisateur)
 - Pas d'inscription publique : agent personnel ; les comptes se créent par `python -m app.manage create-user` (mot de passe demandé au clavier).
 - Mots de passe : argon2 (`argon2-cffi`), 12 à 128 caractères ; stockage de l'empreinte seule (`users.password_hash`, nullable : un compte sans empreinte ne peut pas se connecter).
@@ -366,4 +366,8 @@ Incident : une trace pytest affichait le mot de passe Neon (paramètres de conne
 | Limitation des essais | oui | oui | NON | 429 | oui | audit result=denied |
 | create-user (CLI) | oui | oui (service) | NON | doublon, faible, e-mail | oui | audit user_create |
 
-Seules vérifications par l'auteur : `compileall`, `ruff`, SQL de 0002, logique des tokens. Résultat attendu chez l'utilisateur : 121 tests (non vérifié).
+Vérifications par l'auteur : `compileall`, `ruff`, SQL de 0002, logique des tokens.
+
+### Vérification par l'utilisateur (Codespaces, 2026-10-13)
+`alembic upgrade head` : `0001 -> 0002` appliqué sur Neon. `pytest` : **121 passed, 1 warning en 15,35 s** (le warning est `httpx` déprécié au profit de `httpx2`). `ruff check .` (depuis `backend/`) : All checks passed. Donc argon2, login/me, limitation des essais et migration via Alembic sont vérifiés par les tests sur base réelle.
+Pas encore vérifié : `create-user` (l'invite de mot de passe a été interrompue parce que d'autres commandes avaient été collées en même temps : aucun compte créé), appel réel de `/auth/login` avec curl, réinitialisation du mot de passe Neon (exposé dans une trace) et validation explicite des décisions de conception ci-dessus.
